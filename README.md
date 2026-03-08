@@ -14,4 +14,5 @@ To read your wallet balance (no modification), simply submit "read" to your comm
 
 
 
-![UMLV2](https://github.com/user-attachments/assets/ee79ef95-eb5f-4bc7-a084-6c4af4ac9514)
+
+<img width="1236" height="742" alt="UMLv2" src="https://github.com/user-attachments/assets/7cd7a1d5-05d9-4fbe-a3cd-79833d870b96" />
