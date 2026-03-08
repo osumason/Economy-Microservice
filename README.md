@@ -1,12 +1,17 @@
 # Economy-Microservice
 
-This service allows the user to initialize the amount of points/dollars/credits they start their program with, and it allows them
-to modify that number using basic math functions. Your points are saved in a wallet.txt file for reference.
+This service allows the user to initialize and maintain a wallet for any form of currency. The user has the option of modifying their wallet with basic math operators
+(+,-./,*).
 
-To initialize your points, call the initialize(int) function. Example:
-initialize(5);
+To use the service, initialize econmicroservice.exe. Two .txt files will be made for you in your documents folder: wallet.txt and command.txt. You will issue commands through command.txt. 
+Your wallet will be initialized to zero.
 
-To modify your point total, use the economy (int, char) function. Example:
-Economy(10, '+');
+To modify your wallet, submit an integer and a math operator (no spaces) to your command file. The service will take your command and the existing wallet balance and update the wallet with
+the new balance.
 
-<img width="1248" height="819" alt="image" src="https://github.com/user-attachments/assets/9570e0ae-ab55-4c4a-bbc0-8b9cd6e3730b" />
+To read your wallet balance (no modification), simply submit "read" to your command file. The existing balance will be returned to that file for reading, until you modify it again.
+
+
+
+
+![UMLV2](https://github.com/user-attachments/assets/ee79ef95-eb5f-4bc7-a084-6c4af4ac9514)
