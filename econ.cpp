@@ -3,121 +3,148 @@
 // Reads an integer from wallet.txt and completes a math operation using that number, an int quantity, and a char
 // math operator. Writes the resulting number to wallet.txt.
 
-#include "econ.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
+#include <unistd.h>
+#include <cstdlib>
 
-void initialize (int num)
-{
-    try
-    {
-    std::ofstream wallet("wallet.txt");
+std::string get_storage_path(std::string filename) {//establishes the filepath to the user's documents folder
 
-    if (!wallet.is_open()) //throw error if wallet.txt can't be found or opened
-    {
-        throw std::runtime_error("Could not find or open wallet.txt.");
-    }
-
-    if (typeid(num) != typeid(int)) //throw error if quantity is not an integer
-    {
-        throw std::runtime_error("Variable passed in is not an integer.");
-    }
-
-    wallet << num;
-    wallet.close();
-
-    }
-    catch (std::exception& what)
-    {
-        std::cout << "Exception caught: " << what.what() << '\n';
-    }
-    catch (...)
-    {
-        std::cout << "An unknown error occurred while opening and writing to wallet.txt." << '\n';
-    }
+    const char *drive = std::getenv("HOMEDRIVE");
+    const char *path = std::getenv("HOMEPATH");
+    if (!drive || !path) return filename; // Fallback to local if env fails
+    return std::string(drive) + std::string(path) + "\\Documents\\" + filename;
 }
 
-void economy (int quantity, char operation)
-{
+void initialize () {//creates two text files in the user's documents folder
+
+    std::ofstream wallet(get_storage_path("wallet.txt"));
+    wallet << 0;
+    wallet.close();
+
+    std::ofstream command(get_storage_path("command.txt"));
+    command << "running";
+    command.close();
+}
+
+void economy (int quantity, char operation) {
+
     int total = 0;
 
-    try
-    {
-        std::ifstream wallet("wallet.txt"); //read wall.txt file for integer
+    try {
+        std::ifstream wallet(get_storage_path("wallet.txt"));; //read wall.txt file for integer
 
         if (!wallet.is_open()) //throw error if wallet.txt can't be found or opened
         {
             throw std::runtime_error("Could not find or open wallet.txt.");
         }
 
-        if (!(wallet >> total)) //throw error if wallet.txt is empty or has non-integer data
-        {
-            throw std::runtime_error("wallet.txt is either empty or contains non-integer data.");
-        }
-
         wallet >> total; //stores int from wallet.txt to a variable
-
         wallet.close();
     }
-    catch (std::exception& what)
-    {
+    catch (std::exception &what) {
         std::cout << "Exception caught: " << what.what() << '\n';
     }
-    catch (...)
-    {
+    catch (...) {
         std::cout << "An unknown error occurred while opening and reading wallet.txt." << '\n';
     }
 
-    try
+
+    switch (operation) //completes math operation using variables total, quantity, and operation
     {
+        case '+':
+            total += quantity;
+            break;
 
-        if (operation != '+' && operation != '-' && operation != '*' && operation != '/') //throw error if char isn't a basic math operator
-        {
-            throw std::runtime_error("Operator passed in was not + - / *");
-        }
+        case '-':
+            total -= quantity;
+            break;
 
-        if (typeid(quantity) != typeid(int)) //throw error if quantity is not an integer
-        {
-            throw std::runtime_error("Quantity is not an integer.");
-        }
+        case '/':
+            total /= quantity;
+            break;
 
-        switch (operation) //completes math operation using variables total, quantity, and operation
-        {
-            case '+':
-                total += quantity;
-                break;
+        case '*':
+            total *= quantity;
+            break;
 
-            case '-':
-                total -= quantity;
-                break;
+        default:
+            total = -1;
 
-            case '/':
-                total /= quantity;
-                break;
 
-            case '*':
-                total *= quantity;
-                break;
+            std::ofstream output(get_storage_path("wallet.txt"));
+            output << total; //writes new number to wallet.txt
+            output.close();
 
-            default:
-                total = -1;
-        }
-
-        std::ofstream output("wallet.txt");
-
-        output << total; //writes new number to wallet.txt
-
-        output.close();
+            std::ofstream output2(get_storage_path("command.txt"));;
+            output2 << "running";
+            output2.close();
 
     }
-    catch (std::exception& what)
-    {
+}
+
+
+void read () {
+    std::string check;
+
+    try {
+        std::ifstream command(get_storage_path("command.txt")); //read command.txt file
+
+        if (!command.is_open()) //throw error if wallet.txt can't be found or opened
+        {
+            throw std::runtime_error("Could not find or open command.txt.");
+        }
+        if (!(command >> check))// throw error if file is empty
+        {
+            throw std::runtime_error("Could not read command.txt.");
+        }
+
+        command.close();
+
+        if (check == "read")//takes the balance from wallet.txt and drops it in command.txt for the user to read
+        {
+            int num;
+            std::ifstream wallet(get_storage_path("wallet.txt"));
+            wallet >> num;
+            wallet.close();
+
+            std::ofstream output(get_storage_path("command.txt"));
+            output << num;
+            output.close();
+
+        }
+        else if (check != "running")
+        { //parses integer from operator and runs the economy function
+            int quantity;
+            char operation;
+            size_t processed_char_count;
+            quantity = std::stoi(check, &processed_char_count);
+            operation = check[processed_char_count];
+
+            if (operation == '+' || operation == '-' || operation == '*' ||
+                 operation == '/') {
+                economy(quantity, operation);
+            }
+        }
+    }
+    catch (std::exception &what) {
         std::cout << "Exception caught: " << what.what() << '\n';
     }
-    catch (...)
-    {
-        std::cout << "Unknown exception caught while running math operation and writing to wallet.txt." << '\n';
+    catch (...) {
+        std::cout << "Unknown exception caught while opening and reading command.txt." << '\n';
     }
+}
+
+
+int main() {
+
+    initialize();
+
+    while (true) {
+        read();
+        sleep(1);
+    }
+
+    return 0;
 }
